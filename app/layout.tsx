@@ -14,8 +14,8 @@ const poppins = Poppins({
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Eventgo',
-  description: 'Eventgo is a platform for event management.',
+  title: 'EventGo',
+  description: 'A platform for event management',
   icons: {
     icon: '/assets/images/new-logo.png',
   },
@@ -46,7 +46,7 @@ export default function RootLayout({
       }}
     >
       <html lang="en">
-        <body className={poppins.variable}>
+        <body className={inter.className}>
           {/* No sign-in/out buttons */}
           {children}
         </body>

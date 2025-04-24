@@ -1,7 +1,6 @@
-import { SearchParamProps } from "@/types"
+import { Search as SearchIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
 
 const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) => {
   return (
@@ -13,9 +12,9 @@ const Search = ({ placeholder = 'Search title...' }: { placeholder?: string }) =
           className="input-field"
         />
       </div>
-      <Button className="w-full md:w-fit">
-        <Search className="w-4 h-4 mr-2" />
-        Search
+      <Button className="w-full md:w-fit flex items-center justify-center gap-2">
+        <SearchIcon className="w-4 h-4" />
+        <span>Search</span>
       </Button>
     </div>
   )

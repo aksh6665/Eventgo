@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Sheet,
   SheetContent,
@@ -9,7 +11,8 @@ import {
 import Image from "next/image"
 import { Separator } from "../ui/separator"
 import NavItems from "./NavItems"
-
+import { Button } from "../ui/button"
+import Link from "next/link"
 
 const MobileNav = () => {
   return (
@@ -25,19 +28,21 @@ const MobileNav = () => {
           />
         </SheetTrigger>
         <SheetContent className="flex flex-col gap-6 bg-white md:hidden">
-          <div className="flex items-center gap-2">
-            <Image 
-              src="/assets/images/new-logo.png"
-              alt="logo"
-              width={38}
-              height={8}
-            />
-            <span className="text-black font-bold text-xl">Eventgo</span>
-          </div>
+          <Image 
+            src="/assets/images/new-logo.png"
+            alt="logo"
+            width={19}
+            height={8}
+          />
           <Separator className="border border-gray-50" />
           <NavItems />
+          <Button size="lg" asChild className="button w-full bg-purple-gradient">
+            <Link href="#events">
+              Explore Now
+            </Link>
+          </Button>
         </SheetContent>
-      </Sheet>    
+      </Sheet>
     </nav>
   )
 }
