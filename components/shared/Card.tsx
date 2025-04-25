@@ -1,6 +1,8 @@
+'use client'
+
 import { IEvent } from '@/lib/database/models/event.model'
 import { formatDateTime } from '@/lib/utils'
-import { auth } from '@clerk/nextjs'
+import { useAuth } from '@clerk/nextjs'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
@@ -13,10 +15,9 @@ type CardProps = {
 }
 
 const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
-  const { sessionClaims } = auth();
-  const userId = sessionClaims?.userId as string;
+  const { userId } = useAuth();
 
-  const isEventCreator = userId === event.organizer._id.toString();
+  const isEventCreator = event.organizer ? userId === event.organizer._id.toString() : false;
 
   return (
     <div className="group relative flex min-h-[380px] w-full max-w-[400px] flex-col overflow-hidden rounded-xl bg-white shadow-md transition-all hover:shadow-lg md:min-h-[438px]">
@@ -45,7 +46,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
             {event.isFree ? 'FREE' : `$${event.price}`}
           </span>
           <p className="p-semibold-14 w-min rounded-full bg-grey-500/10 px-4 py-1 text-grey-500 line-clamp-1">
-            {event.category.name}
+            {event.category ? event.category.name : 'Uncategorized'}
           </p>
         </div>}
 
@@ -59,7 +60,7 @@ const Card = ({ event, hasOrderLink, hidePrice }: CardProps) => {
 
         <div className="flex-between w-full">
           <p className="p-medium-14 md:p-medium-16 text-grey-600">
-            {event.organizer.firstName} {event.organizer.lastName}
+            {event.organizer ? `${event.organizer.firstName} ${event.organizer.lastName}` : 'Unknown Organizer'}
           </p>
 
           {hasOrderLink && (

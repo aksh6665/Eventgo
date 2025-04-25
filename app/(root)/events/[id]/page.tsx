@@ -4,15 +4,23 @@ import { getEventById, getRelatedEventsByCategory } from '@/lib/actions/event.ac
 import { formatDateTime } from '@/lib/utils';
 import { SearchParamProps } from '@/types'
 import Image from 'next/image';
+import { notFound } from 'next/navigation';
 
 const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) => {
   const event = await getEventById(id);
 
-  const relatedEvents = await getRelatedEventsByCategory({
-    categoryId: event.category._id,
-    eventId: event._id,
-    page: searchParams.page as string,
-  })
+  if (!event) {
+    notFound();
+  }
+
+  let relatedEvents = null;
+  if (event.category?._id) {
+    relatedEvents = await getRelatedEventsByCategory({
+      categoryId: event.category._id,
+      eventId: event._id,
+      page: Number(searchParams.page) || 1,
+    });
+  }
 
   return (
     <>
@@ -35,19 +43,29 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
                 <p className="p-bold-20 rounded-full bg-green-500/10 px-5 py-2 text-green-700">
                   {event.isFree ? 'FREE' : `$${event.price}`}
                 </p>
-                <p className="p-medium-16 rounded-full bg-grey-500/10 px-4 py-2.5 text-grey-500">
-                  {event.category.name}
-                </p>
+                {event.category ? (
+                  <p className="p-medium-16 rounded-full bg-grey-500/10 px-4 py-2.5 text-grey-500">
+                    {event.category.name}
+                  </p>
+                ) : (
+                  <p className="p-medium-16 rounded-full bg-grey-500/10 px-4 py-2.5 text-grey-500">
+                    Uncategorized
+                  </p>
+                )}
               </div>
 
-              <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
-                by{' '}
-                <span className="text-primary-500">{event.organizer.firstName} {event.organizer.lastName}</span>
-              </p>
+              {event.organizer && (
+                <p className="p-medium-18 ml-2 mt-2 sm:mt-0">
+                  by{' '}
+                  <span className="text-primary-500">
+                    {event.organizer ? `${event.organizer.firstName} ${event.organizer.lastName}` : 'Unknown Organizer'}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
 
-          <CheckoutButton event={event} />
+          <CheckoutButton event={event} userId={event.organizer?._id} />
 
           <div className="flex flex-col gap-5">
             <div className='flex gap-2 md:gap-3'>
@@ -73,26 +91,30 @@ const EventDetails = async ({ params: { id }, searchParams }: SearchParamProps) 
           <div className="flex flex-col gap-2">
             <p className="p-bold-20 text-grey-600">What You'll Learn:</p>
             <p className="p-medium-16 lg:p-regular-18">{event.description}</p>
-            <p className="p-medium-16 lg:p-regular-18 truncate text-primary-500 underline">{event.url}</p>
+            {event.url && (
+              <p className="p-medium-16 lg:p-regular-18 truncate text-primary-500 underline">{event.url}</p>
+            )}
           </div>
         </div>
       </div>
     </section>
 
     {/* EVENTS with the same category */}
-    <section className="wrapper my-8 flex flex-col gap-8 md:gap-12">
-      <h2 className="h2-bold">Related Events</h2>
+    {relatedEvents && (
+      <section className="wrapper my-8 flex flex-col gap-8 md:gap-12">
+        <h2 className="h2-bold">Related Events</h2>
 
-      <Collection 
-          data={relatedEvents?.data}
+        <Collection 
+          data={relatedEvents.data}
           emptyTitle="No Events Found"
           emptyStateSubtext="Come back later"
           collectionType="All_Events"
           limit={3}
-          page={searchParams.page as string}
-          totalPages={relatedEvents?.totalPages}
+          page={Number(searchParams.page) || 1}
+          totalPages={relatedEvents.totalPages}
         />
-    </section>
+      </section>
+    )}
     </>
   )
 }

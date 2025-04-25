@@ -28,6 +28,12 @@ const MobileNav = () => {
           />
         </SheetTrigger>
         <SheetContent className="flex flex-col gap-6 bg-white md:hidden">
+          <SheetHeader>
+            <SheetTitle>Navigation Menu</SheetTitle>
+            <SheetDescription>
+              Access all navigation options
+            </SheetDescription>
+          </SheetHeader>
           <Image 
             src="/assets/images/new-logo.png"
             alt="logo"

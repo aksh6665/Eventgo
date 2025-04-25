@@ -11,6 +11,7 @@ type CollectionProps = {
   limit: number
   page: number | string
   totalPages?: number
+  urlParamName?: string
 }
 
 const Collection = ({
@@ -20,6 +21,7 @@ const Collection = ({
   collectionType,
   page,
   totalPages = 0,
+  urlParamName,
 }: CollectionProps) => {
   return (
     <>
@@ -41,7 +43,7 @@ const Collection = ({
                     <div className="flex min-h-[230px] flex-col gap-3 p-5 md:gap-4">
                       <div className="flex gap-2">
                         <span className="p-semibold-14 w-min rounded-full bg-grey-500/10 px-4 py-1 text-grey-500">
-                          {event.category.name}
+                          {event.category ? event.category.name : 'Uncategorized'}
                         </span>
                         <p className="p-semibold-14 w-min rounded-full bg-grey-500/10 px-4 py-1 text-grey-500">
                           {event.isFree ? 'FREE' : `$${event.price}`}
@@ -58,7 +60,7 @@ const Collection = ({
                         </p>
 
                         <p className="p-medium-14 md:p-medium-16 text-grey-600">
-                          {event.organizer.firstName} {event.organizer.lastName}
+                          {event.organizer ? `${event.organizer.firstName} ${event.organizer.lastName}` : 'Unknown Organizer'}
                         </p>
                       </div>
                     </div>
