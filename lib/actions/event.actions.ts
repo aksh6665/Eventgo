@@ -116,8 +116,21 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
     await connectToDatabase()
 
-    // Get the MongoDB user using the Clerk ID
-    const mongoUser = await User.findOne({ clerkId: userId })
+    // First, ensure the user exists in MongoDB
+    let mongoUser = await User.findOne({ clerkId: userId })
+    
+    if (!mongoUser) {
+      // If user doesn't exist, sync with Clerk
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/user/sync`)
+      const data = await response.json()
+      
+      if (data.error) {
+        throw new Error('Failed to sync user data')
+      }
+      
+      mongoUser = data.user
+    }
+
     if (!mongoUser) {
       throw new Error('User not found')
     }
@@ -127,17 +140,26 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
     const newEvent = await Event.create({
       ...eventData,
       category: categoryId,
-      organizer: mongoUser._id, // Use MongoDB user ID instead of Clerk ID
+      organizer: mongoUser._id,
     })
 
     const populatedEvent = await Event.findById(newEvent._id)
-      .populate({ path: 'organizer', model: 'User', select: '_id firstName lastName' })
-      .populate({ path: 'category', model: 'Category', select: '_id name' })
+      .populate({ 
+        path: 'organizer', 
+        model: User,
+        select: '_id firstName lastName'
+      })
+      .populate({ 
+        path: 'category', 
+        model: Category,
+        select: '_id name'
+      })
 
     if (!populatedEvent) {
       throw new Error('Failed to create event')
     }
 
+    // Ensure the event has all required fields before serializing
     const serializedEvent = {
       ...populatedEvent.toObject(),
       _id: populatedEvent._id.toString(),
@@ -145,17 +167,19 @@ export async function createEvent({ userId, event, path }: CreateEventParams) {
       startDateTime: populatedEvent.startDateTime.toISOString(),
       endDateTime: populatedEvent.endDateTime.toISOString(),
       organizer: populatedEvent.organizer ? {
-        ...populatedEvent.organizer.toObject(),
-        _id: populatedEvent.organizer._id.toString()
+        _id: populatedEvent.organizer._id.toString(),
+        firstName: populatedEvent.organizer.firstName || '',
+        lastName: populatedEvent.organizer.lastName || ''
       } : null,
       category: populatedEvent.category ? {
-        ...populatedEvent.category.toObject(),
-        _id: populatedEvent.category._id.toString()
+        _id: populatedEvent.category._id.toString(),
+        name: populatedEvent.category.name
       } : null
     }
 
     return serializedEvent
   } catch (error) {
+    console.error('Error creating event:', error)
     handleError(error)
   }
 }
@@ -269,13 +293,30 @@ export async function deleteEvent({ eventId, path }: DeleteEventParams) {
   try {
     await connectToDatabase()
 
+    // First check if the event exists
+    const event = await Event.findById(eventId)
+    if (!event) {
+      throw new Error('Event not found')
+    }
+
+    // Delete the event
     const deletedEvent = await Event.findByIdAndDelete(eventId)
     if (!deletedEvent) {
       throw new Error('Failed to delete event')
     }
 
-    return JSON.parse(JSON.stringify(deletedEvent))
+    // Return the deleted event data
+    return {
+      success: true,
+      data: JSON.parse(JSON.stringify(deletedEvent))
+    }
   } catch (error) {
-    handleError(error)
+    // Proper error handling with detailed message
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    console.error('Error in deleteEvent:', errorMessage)
+    return {
+      success: false,
+      error: errorMessage
+    }
   }
 } 

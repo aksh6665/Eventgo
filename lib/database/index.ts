@@ -18,7 +18,7 @@ export const connectToDatabase = async () => {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      dbName: 'Eventgo',
+        dbName: 'Eventgo',
     };
 
     console.log('Connecting to MongoDB...');
@@ -36,5 +36,5 @@ export const connectToDatabase = async () => {
     throw e;
   }
 
-  return cached.conn;
+    return cached.conn;
 };

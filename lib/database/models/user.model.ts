@@ -38,7 +38,7 @@ const UserSchema = new Schema({
     required: true,
     unique: true,
   },
-})
+    })
 
 const User = models.User || model('User', UserSchema)
 

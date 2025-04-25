@@ -23,7 +23,7 @@ import { createCategory, getAllCategories } from "@/lib/actions/category.actions
 
 type DropdownProps = {
   value?: string
-  onChangeHandler?: () => void
+  onChangeHandler?: (value: string) => void
 }
 
 const Dropdown = ({ value, onChangeHandler }: DropdownProps) => {
